@@ -3,6 +3,7 @@ import { UserModal } from "@/lib/modals/user";
 
 export async function GET(request) {
   await connectDB();
+  console.log('request', connectDB());
   const users = await UserModal.find();
   return Response.json(
     {
@@ -28,6 +29,6 @@ export async function POST(request) {
   );
 }
 
-export async function PUT(request) {}
+export async function PUT(request) { }
 
-export async function DELETE(request) {}
+export async function DELETE(request) { }

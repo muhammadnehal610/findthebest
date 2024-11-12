@@ -11,8 +11,21 @@ Admin functionlaties
 6.See analytics
 
 
-Uers functionlaties 
+Uers functionlaties   web/app
 1.SignIn , SignUp
 2.Explore events
 3.User and event creater can do posts and commentes to that events
 4.User can join the event
+
+
+Technologies 
+Front End / Back End
+
+dataBase
+MongoDB
+
+CSS    : Tailwind
+Libery : ShadeCN
+
+API testing 
+Post men 

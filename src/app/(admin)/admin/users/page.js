@@ -64,7 +64,7 @@ function Users() {
           {users.map((users) => (
             <TableRow key={users.name}>
               <TableCell className="font-medium">
-                <Image
+                <image
                   width={50}
                   height={50}
                   src={users.profileImg}

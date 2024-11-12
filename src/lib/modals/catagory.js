@@ -8,4 +8,4 @@ const categorySchema = new Schema({
 });
 
 export const CategoryModal =
-  mongoose.models.Categories || mongoose.model("Categories", categorySchema);
+  mongoose.models.categories || mongoose.model("categories", categorySchema);

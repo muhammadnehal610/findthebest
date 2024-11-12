@@ -1,13 +1,17 @@
-import mongoose, { Schema } from "mongoose";
-const { schema } = mongoose;
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const subCatagorySchema = new Schema({
-  title: String,
-  discription: String,
-  catagory: { type: mongoose.Types.ObjectId, ref: "catagory" },
-  thumbnil: String,
+const subcategorySchema = new Schema({
+  title: { type: String, required: true },
+  description: String,
+  thumbnail: { type: String, required: true },
+  category: {
+    type: mongoose.Types.ObjectId,
+    ref: "categories",
+    required: true,
+  },
 });
-export const subCatagoryModale = mongoose.Model(
-  "subcatagory",
-  subCatagorySchema
-);
+
+export const SubCategoryModal =
+  mongoose.models.Subcategories ||
+  mongoose.model("Subcategories", subcategorySchema);

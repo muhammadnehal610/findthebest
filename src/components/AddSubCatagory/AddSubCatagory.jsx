@@ -68,7 +68,7 @@ export function AddSubCategory({ categories }) {
         <DialogHeader>
           <DialogTitle>Add Subcategory</DialogTitle>
           <DialogDescription>
-            Add a new subcategory here. Click save when you're done.
+            Add a new subcategory here. Click save when {`you're`} done.
           </DialogDescription>
         </DialogHeader>
         <form action={handleAddSubCategory} className="grid gap-4 py-4">

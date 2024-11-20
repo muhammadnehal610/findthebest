@@ -32,7 +32,6 @@ import { useRef, useState } from "react";
 
 export function AddCategory() {
   const [open, setOpen] = useState(false);
-
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
@@ -83,18 +82,17 @@ function ProfileForm({ className, setOpen }) {
   const formRef = useRef();
   const { toast } = useToast();
 
-  const addCategory = async (formData) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
 
     try {
-      const title = formData.get("title");
-      const description = formData.get("description");
-      const thumbnail = formData.get("thumbnail");
+      const formData = new FormData(event.target);
       const uploadImage = await uploadFile(formData);
 
       const obj = {
-        title,
-        description,
+        title: formData.get("title"),
+        description: formData.get("description"),
         thumbnail: uploadImage,
       };
       await addCategoryData(obj);
@@ -109,7 +107,7 @@ function ProfileForm({ className, setOpen }) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add category",
+        description: "Failed to add category: " + error.message,
         variant: "error",
         action: <ToastAction altText="Try again">Try again</ToastAction>,
       });
@@ -119,7 +117,7 @@ function ProfileForm({ className, setOpen }) {
   };
 
   return (
-    <form ref={formRef} action={addCategory} className={className}>
+    <form ref={formRef} onSubmit={handleSubmit} className={className}>
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="title" className="text-right">

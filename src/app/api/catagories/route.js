@@ -1,9 +1,9 @@
 import { connectDB } from "@/lib/db/connectDB";
-import { CategoryModal } from "@/lib/modals/catagory";
+import { CategoryModel } from "@/lib/modals/catagory";
 
 export async function GET(request) {
   await connectDB();
-  const categories = await CategoryModal.find();
+  const categories = await CategoryModel.find();
   return Response.json(
     {
       msg: "Categories Fetched Successfully",
@@ -16,7 +16,7 @@ export async function GET(request) {
 export async function POST(request) {
   await connectDB();
   const obj = await request.json();
-  let newCategory = new CategoryModal(obj);
+  let newCategory = new CategoryModel(obj);
   await newCategory.save();
 
   return Response.json(

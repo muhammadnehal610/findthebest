@@ -2,7 +2,7 @@
 
 import crypto from "crypto";
 
-export async function uploadFile(categoryData) {
+export async function uploadFile(formData) {
   const cloudName = process.env.CLOUDNERY_API_NAME;
   const apiKey = process.env.CLOUDNERY_API_KEY;
   const apiSecret = process.env.CLOUDNERY_API_SECRET;
@@ -14,23 +14,23 @@ export async function uploadFile(categoryData) {
   const timeStamp = Math.floor(Date.now() / 1000);
   const signature = generateSignature(timeStamp, apiSecret);
 
-  const file = categoryData.get("thumbnail");
-  if (!file) {
-    throw new Error("No file uploaded");
+  const file = formData.get("thumbnail");
+  if (!file || !(file instanceof File)) {
+    throw new Error("No file uploaded or invalid file");
   }
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("api_key", apiKey);
-  formData.append("timestamp", timeStamp.toString());
-  formData.append("signature", signature);
+  const uploadFormData = new FormData();
+  uploadFormData.append("file", file);
+  uploadFormData.append("api_key", apiKey);
+  uploadFormData.append("timestamp", timeStamp.toString());
+  uploadFormData.append("signature", signature);
 
   try {
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       {
         method: "POST",
-        body: formData,
+        body: uploadFormData,
       }
     );
 
@@ -55,16 +55,3 @@ function generateSignature(timestamp, apiSecret) {
     .update(`timestamp=${timestamp}${apiSecret}`)
     .digest("hex");
 }
-
-// Example usage (uncomment to test)
-// async function testUpload() {
-//   const mockFormData = new FormData()
-//   mockFormData.append('thumbnail', new Blob(['test file content'], { type: 'image/png' }), 'test.png')
-//   try {
-//     const result = await uploadFile(mockFormData)
-//     console.log('Test upload result:', result)
-//   } catch (error) {
-//     console.error('Test upload error:', error)
-//   }
-// }
-// testUpload()

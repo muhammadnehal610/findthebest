@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-// import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,16 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,103 +20,117 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { addSubCategoryData } from "@/action/subcategory";
+import { uploadFile } from "@/action/upload";
 
-export function AddSubCategory() {
+export function AddSubCategory({ categories }) {
   const [open, setOpen] = React.useState(false);
-  const isDesktop = true;
+  const router = useRouter();
+  const { toast } = useToast();
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline">Edit Profile</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when {`you're`}{" "}
-              done.
-            </DialogDescription>
-          </DialogHeader>
-          <ProfileForm />
-        </DialogContent>
-      </Dialog>
-    );
+  async function handleAddSubCategory(formData) {
+    const result = await addSubCategoryData({
+      title: formData.get("title"),
+      description: formData.get("description"),
+      category: formData.get("category"),
+      thumbnail: await uploadFile(formData),
+    });
+
+    if (result.success) {
+      toast({
+        title: "Success",
+        description: "Subcategory added successfully",
+        variant: "success",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+      setOpen(false);
+      router.refresh();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to add subcategory",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    }
   }
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant="outline">Edit Profile</Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Edit profile</DrawerTitle>
-          <DrawerDescription>
-            Make changes to your profile here. Click save when {`you're`} done.
-          </DrawerDescription>
-        </DrawerHeader>
-        <ProfileForm className="px-4" />
-        <DrawerFooter className="pt-2">
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  );
-}
-
-function ProfileForm({ className }) {
-  const handleAddSubCategory = async (formData) => {
-    console.log(formData);
-  };
-  return (
-    <form
-      action={handleAddSubCategory}
-      className={cn("grid items-start gap-4", className)}
-    >
-      <div className="grid gap-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          required
-          name="title"
-          type="title"
-          id="title"
-          placeholder="Sports"
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="description">Description</Label>
-        <Input
-          required
-          name="description"
-          id="description"
-          placeholder="About Category"
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="thumbnail">Thumbnail</Label>
-        <Input required name="thumbnail" type="file" />
-      </div>
-
-      <div className="grid gap-2">
-        <Select name="category">
-          <SelectTrigger>
-            <SelectValue placeholder="Select Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {/* {categories?.map((data) => (
-              <SelectItem key={data._id} value={data._id}>
-                {data.title}
-              </SelectItem>
-            ))} */}
-          </SelectContent>
-        </Select>
-      </div>
-      <Button type="submit">Save changes</Button>
-    </form>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">Add Subcategory</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add Subcategory</DialogTitle>
+          <DialogDescription>
+            Add a new subcategory here. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
+        <form action={handleAddSubCategory} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="title" className="text-right">
+              Title
+            </Label>
+            <Input
+              id="title"
+              name="title"
+              placeholder="e.g., Sports"
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="About the subcategory"
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="category" className="text-right">
+              Category
+            </Label>
+            <Select name="category" required>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category._id} value={category._id}>
+                    {category.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="thumbnail" className="text-right">
+              Thumbnail
+            </Label>
+            <Input
+              id="thumbnail"
+              name="thumbnail"
+              type="file"
+              accept="image/*"
+              className="col-span-3"
+              required
+            />
+          </div>
+          <Button type="submit" className="ml-auto">
+            Add Subcategory
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

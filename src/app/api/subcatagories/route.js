@@ -3,44 +3,69 @@ import { SubCategoryModal } from "@/lib/modals/subCatagory";
 
 export async function GET(request) {
   await connectDB();
-  const queryurl = request.url;
-
-  const { searchParams } = new URL(queryurl);
-  console.log("searchParams=>", searchParams);
+  const { searchParams } = new URL(request.url);
   const query = {};
+
   if (searchParams.get("category")) {
     query.category = searchParams.get("category");
   }
-  console.log("query=>", query);
 
-  const categories = await SubCategoryModal.find(query).populate(
-    "category",
-    "title"
-  );
-  return Response.json(
-    {
-      msg: "SubCategories Fetched Successfully",
-      categories,
-    },
-    { status: 200 }
-  );
+  try {
+    const subcategories = await SubCategoryModal.find(query).populate(
+      "category",
+      "title"
+    );
+    return Response.json(
+      {
+        message: "Subcategories fetched successfully",
+        subcategories,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error fetching subcategories:", error);
+    return Response.json(
+      {
+        message: "Failed to fetch subcategories",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request) {
   await connectDB();
-  const obj = await request.json();
-  let newSubCategory = new SubCategoryModal(obj);
-  await newSubCategory.save();
+  try {
+    const obj = await request.json();
+    let newSubCategory = new SubCategoryModal(obj);
+    await newSubCategory.save();
 
-  return Response.json(
-    {
-      msg: "SubCategory Added Successfully ",
-      subcategory: newSubCategory,
-    },
-    { status: 201 }
-  );
+    return Response.json(
+      {
+        message: "Subcategory added successfully",
+        subcategory: newSubCategory,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error adding subcategory:", error);
+    return Response.json(
+      {
+        message: "Failed to add subcategory",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
 }
 
-export async function PUT(request) {}
+export async function PUT(request) {
+  // Implement update logic here
+  return Response.json({ message: "Not implemented" }, { status: 501 });
+}
 
-export async function DELETE(request) {}
+export async function DELETE(request) {
+  // Implement delete logic here
+  return Response.json({ message: "Not implemented" }, { status: 501 });
+}

@@ -1,21 +1,7 @@
 import { connectDB } from "@/lib/db/connectDB";
 import { UserModal } from "@/lib/modals/user";
-import { connect, connection, Schema } from "mongoose";
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-
-// const UserModal =
-//   connection.models.users ||
-//   connection.model(
-//     "users",
-//     new Schema({
-//       fullname: String,
-//       email: String,
-//       password: String,
-//       profileImg: String,
-//       role: { type: String, default: "user" },
-//     })
-//   );
+import GoogleProvider from "next-auth/providers/google";
 
 const handleUser = async (profile) => {
   await connectDB();
@@ -35,14 +21,21 @@ const handleUser = async (profile) => {
   return newUser.toObject();
 };
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Google],
+export const authOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    }),
+  ],
   callbacks: {
     async signIn({ account, profile }) {
+      console.log("SignIn callback triggered", { account, profile });
       await handleUser(profile);
       return true;
     },
     async jwt({ token, user }) {
+      console.log("JWT callback triggered", { token, user });
       const userFromDB = await handleUser(token);
       if (userFromDB) {
         token._id = userFromDB._id.toString();
@@ -51,10 +44,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      console.log("Session callback triggered", { session, token });
       session.user.id = token.id;
       session.user._id = token._id;
       session.user.role = token.role;
       return session;
     },
   },
-});
+  debug: true, // Enable debug messages
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth(authOptions);

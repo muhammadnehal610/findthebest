@@ -25,7 +25,7 @@ export const addCategoryData = async (obj) => {
 
 export const getCategoryData = async () => {
   let categories = await fetch(`${process.env.BASE_URL}api/catagories`);
-  categories = (await categories).json();
+  categories = await categories.json();
   console.log("categories fetch successfully");
 
   return categories;

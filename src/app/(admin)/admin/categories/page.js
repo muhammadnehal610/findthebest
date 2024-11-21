@@ -16,6 +16,7 @@ import { AddCategory } from "@/components/AddCatagory/AddCatagory";
 
 export default async function Category() {
   const { categories } = await getCategoryData();
+  console.log("categories=>", categories);
 
   return (
     <div className="container mx-auto py-10">

@@ -1,5 +1,5 @@
-import mongoose, { Schema } from "mongoose";
-const { schema } = mongoose;
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const eventSchema = new Schema({
   title: String,
@@ -12,9 +12,12 @@ const eventSchema = new Schema({
     lang: Number,
     lat: Number,
   },
-  thumbnil: String,
+  thumbnail: String,
   address: String,
-  createrBy: { type: mongoose.Types.ObjectId, ref: "users" },
+  createdBy: { type: mongoose.Types.ObjectId, ref: "users" },
+  category: { type: mongoose.Types.ObjectId, ref: "categories" },
+  subCategory: { type: mongoose.Types.ObjectId, ref: "subcategories" },
   going: [{ type: mongoose.Types.ObjectId, ref: "users" }],
 });
-export const eventModale = mongoose.Model("event", eventSchema);
+export const eventModale =
+  mongoose.models.event || mongoose.model("event", eventSchema);

@@ -8,7 +8,11 @@ import { trusted } from "mongoose";
 export async function GET(request) {
   await connectDB();
 
+  const category = request?.nextUrl?.searchParams?.get("category");
   const query = {};
+  if (category) {
+    query.category = category;
+  }
 
   try {
     const events = await eventModale

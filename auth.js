@@ -30,12 +30,12 @@ export const authOptions = {
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      console.log("SignIn callback triggered", { account, profile });
+      // console.log("SignIn callback triggered", { account, profile });
       await handleUser(profile);
       return true;
     },
     async jwt({ token, user }) {
-      console.log("JWT callback triggered", { token, user });
+      // console.log("JWT callback triggered", { token, user });
       const userFromDB = await handleUser(token);
       if (userFromDB) {
         token._id = userFromDB._id.toString();
@@ -44,7 +44,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      console.log("Session callback triggered", { session, token });
+      // console.log("Session callback triggered", { session, token });
       session.user.id = token.id;
       session.user._id = token._id;
       session.user.role = token.role;

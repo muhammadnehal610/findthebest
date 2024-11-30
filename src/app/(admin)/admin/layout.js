@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
-import { auth } from "../../../../auth";
+import { auth, signOut } from "../../../../auth";
 import { redirect } from "next/navigation";
 import {
   LayoutDashboard,
@@ -61,7 +61,16 @@ async function AdminLayout({ children }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>
+                    <form
+                      action={async () => {
+                        "use server";
+                        await signOut();
+                      }}
+                    >
+                      <button type="submit">Sign Out</button>
+                    </form>
+                  </span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -12,7 +12,7 @@ export default async function Home({ searchParams }) {
 
   const session = await auth();
   const events = await getEvents(category);
-  const categories = await getCategoryData();
+  const { categories } = await getCategoryData();
   return (
     <main className="min-h-screen bg-gray-100">
       <Header session={session} />
@@ -40,7 +40,7 @@ export default async function Home({ searchParams }) {
 
       {/* Event List Section */}
       <section id="events">
-        <EventList eventsList={events} categoriesList={categories} />
+        <EventList session={session} events={events} categories={categories} />
       </section>
     </main>
   );

@@ -22,10 +22,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarIcon, MapPinIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import AddEventForm from "../EventSheat/EventSheat";
 
-export default function EventList({ eventsList, categoriesList }) {
-  const [events, setEvents] = useState([]);
-  const [categories, setCategories] = useState([]);
+export default function EventList({ session, events, categories }) {
+  const [eventsList, setEventsList] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,13 +36,13 @@ export default function EventList({ eventsList, categoriesList }) {
 
   useEffect(() => {
     // Set initial events and categories from props
-    setEvents(eventsList.events || []);
-    setCategories([
+    setEventsList(events.events || []);
+    setCategoriesList([
       { _id: "All", title: "All" },
       ...(categoriesList.categories || []),
     ]);
     setIsLoading(false);
-  }, [eventsList, categoriesList]);
+  }, [events, categories]);
 
   const handleSelectCategory = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -65,18 +66,23 @@ export default function EventList({ eventsList, categoriesList }) {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800">Upcoming Events</h2>
-          <Select onValueChange={handleSelectCategory} value={selectedCategory}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category._id} value={category._id}>
-                  {category.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          <div className="flex gap-5">
+            <Select onValueChange={handleSelectCategory}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoriesList.map((category) => (
+                  <SelectItem key={category._id} value={category._id}>
+                    {category.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <AddEventForm session={session} categories={categories} />
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading
@@ -98,7 +104,7 @@ export default function EventList({ eventsList, categoriesList }) {
                     </CardFooter>
                   </Card>
                 ))
-            : events.map((event) => (
+            : eventsList.map((event) => (
                 <Card key={event._id}>
                   <CardHeader>
                     <CardTitle>{event.title}</CardTitle>

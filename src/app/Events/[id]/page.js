@@ -1,7 +1,5 @@
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import { auth } from "../../../../auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -12,31 +10,34 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-  UserCheckIcon,
-  UserIcon,
-} from "lucide-react";
+import { CalendarIcon, ClockIcon, MapPinIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { getSingleEvent } from "@/action/events";
 import { Badge } from "@/components/ui/badge";
+import { getComments } from "@/action/comment";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import GoingButton from "@/components/EventGoingBtn.jsx/EventGoingBtn";
+import CommentForm from "@/components/AddCommentBtn/AddCommentBtn";
+import { auth } from "../../../../auth";
+
 dayjs.extend(relativeTime);
 
 export default async function EventDetailsPage({ params }) {
-  console.log("params=>", params);
-
-  const { event } = await getSingleEvent(params.id);
-  //   const { comments } = await getComments(params.id);
-  if (!event) redirect("not-found");
   const session = await auth();
+  const eventData = await getSingleEvent(params.id);
+  const commentsData = await getComments(params.id);
 
-  console.log("event going==>", event);
+  if (!eventData.event) {
+    notFound();
+  }
+
+  const { event } = eventData;
+  const { comments } = commentsData;
+  console.log("commant=>", commentsData);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -46,8 +47,9 @@ export default async function EventDetailsPage({ params }) {
     });
   };
 
-  //   const isGoingToEvent =
-  //     session && event.going.find((data) => data._id == session.user._id);
+  const isGoingToEvent =
+    session && event.going.some((user) => user._id === session.user._id);
+
   return (
     <div className="min-h-screen bg-background p-6">
       <Card className="max-w-3xl mx-auto">
@@ -97,74 +99,56 @@ export default async function EventDetailsPage({ params }) {
           <Separator className="my-4" />
           <div>
             <h3 className="text-lg font-semibold mb-2">Attendees</h3>
-            {/* <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {event?.going?.map((user) => (
                 <Avatar key={user._id} title={user.fullname}>
                   <AvatarImage src={user.profileImg} />
                   <AvatarFallback>{user.fullname.charAt(0)}</AvatarFallback>
                 </Avatar>
               ))}
-            </div> */}
+            </div>
           </div>
         </CardContent>
-        {/* <CardFooter className="flex flex-col">
+        <CardFooter className="flex flex-col">
           {session ? (
-            <form
-              action={async () => {
-                "use server";
-                await goingToEvent(params.id, session.user._id);
-              }}
+            <Suspense
+              fallback={
+                <Button className="w-full" disabled>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </Button>
+              }
             >
-              {isGoingToEvent ? (
-                <Button type="submit" className="w-full">
-                  <span className="flex">
-                    <UserCheckIcon className="mr-2 h-4 w-4" /> Going
-                  </span>
-                </Button>
-              ) : (
-                <Button type="submit" className="w-full">
-                  <span className="flex">
-                    <UserIcon className="mr-2 h-4 w-4" /> Want to Go
-                  </span>
-                </Button>
-              )}
-              {/* <UserIcon className="mr-2 h-4 w-4" />{" "} */}
-        {/* {isGoingToEvent ? "Going" : "Want to Go"} */}
-        {/* </form>
+              <GoingButton
+                eventId={params.id}
+                userId={session.user._id}
+                isInitiallyGoing={isGoingToEvent}
+              />
+            </Suspense>
           ) : (
-            <Link className="w-full" href={"/signin"}>
-              <Button className="w-full"> Login to participate in Event</Button>
+            <Link className="w-full" href="/signin">
+              <Button className="w-full">Login to participate in Event</Button>
             </Link>
           )}
+
           {session && (
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4 mt-4">
               <h2 className="text-xl font-semibold">Comments</h2>
-              <form
-                action={async (formData) => {
-                  "use server";
-                  await addComment({
-                    event: params.id,
-                    user: session.user._id,
-                    comment: formData.get("comment"),
-                  });
-                }}
-                className="space-y-2"
+              <Suspense
+                fallback={
+                  <div className="h-[100px] flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                }
               >
-                <div className="flex space-x-2">
-                  <Input
-                    className="flex-grow"
-                    name="comment"
-                    placeholder="Add a comment..."
-                  />
-                  <Button type="submit">Post</Button>
-                </div>
-              </form>
-              <div className="space-y-4">
+                <CommentForm eventId={params.id} userId={session.user._id} />
+              </Suspense>
+              <ScrollArea className="h-[300px] rounded-md border p-4">
                 {comments && comments.length > 0 ? (
                   comments.map((comment) => (
                     <div
                       key={comment._id}
-                      className="flex items-start space-x-3 bg-muted p-3 rounded-lg"
+                      className="flex items-start space-x-3 bg-muted p-3 rounded-lg mb-4"
                     >
                       <Avatar title={comment.user.fullname}>
                         <AvatarImage src={comment.user.profileImg} />
@@ -173,12 +157,18 @@ export default async function EventDetailsPage({ params }) {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <p className="font-semibold">{comment.user.fullname}</p>
-                        <p className="text-md font-semibold text-muted-foreground mt-1">
+                        <div className="flex justify-between items-center">
+                          <p className="font-semibold">
+                            {comment.user.fullname}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {dayjs(comment.createdAt).format(
+                              "MMM D, YYYY h:mm A"
+                            )}
+                          </p>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">
                           {comment.comment}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {dayjs().from(dayjs(comment.createdAt))}
                         </p>
                       </div>
                     </div>
@@ -188,10 +178,10 @@ export default async function EventDetailsPage({ params }) {
                     No comments yet. Be the first to comment!
                   </p>
                 )}
-              </div>
+              </ScrollArea>
             </div>
           )}
-        </CardFooter> */}
+        </CardFooter>
       </Card>
     </div>
   );

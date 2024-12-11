@@ -18,7 +18,7 @@ export const addEvents = async (obj) => {
     }
 
     console.log("events added successfully");
-    revalidatePath("/admin/events"); // Correct path
+    revalidatePath("/admin/events");
   } catch (error) {
     console.error("Error adding events:", error);
   }
@@ -34,9 +34,8 @@ export const getEvents = async (category) => {
   console.log("Events fetch successfully");
 
   return Events;
-
-  revalidatePath("/admin/catageries");
 };
+
 export const getSingleEvent = async (id) => {
   console.log("id in action=>", id);
 
@@ -48,6 +47,33 @@ export const getSingleEvent = async (id) => {
   } else {
     redirect("/not-found");
   }
+};
 
-  revalidatePath("/admin/catageries");
+export const goingToEvent = async (id, userId) => {
+  console.log("id in action=>", id);
+
+  try {
+    const response = await fetch(
+      `${process.env.BASE_URL}api/events/${id}/going`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to update event attendance");
+    }
+
+    const data = await response.json();
+    console.log("Event updated successfully");
+    revalidatePath(`/events/${id}`);
+    return data;
+  } catch (error) {
+    console.error("Error updating event attendance:", error);
+    throw error;
+  }
 };
